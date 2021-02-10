@@ -189,6 +189,8 @@ after_initialize do
 
     require_dependency 'list_controller'
     class ::ListController
+      skip_before_action :ensure_logged_in, only: %i[voted_by]
+
       def voted_by
         unless SiteSetting.voting_show_votes_on_profile
           render nothing: true, status: 404
