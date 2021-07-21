@@ -63,5 +63,12 @@ export default {
         });
       }
     });
+
+    withPluginApi("0.11.7", (api) => {
+      const siteSettings = api.container.lookup("site-settings:main");
+      if (siteSettings.voting_enabled) {
+        api.addSearchSuggestion("order:votes");
+      }
+    });
   },
 };
