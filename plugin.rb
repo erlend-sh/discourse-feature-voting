@@ -102,18 +102,12 @@ after_initialize do
     add_to_serializer(:basic_category, :can_vote, false) { SiteSetting.voting_enabled }
     add_to_serializer(:basic_category, :include_can_vote?) { Category.can_vote?(object.id) }
 
-    # TODO: Remove if check once Discourse 2.6 is stable
-    if respond_to?(:register_search_advanced_filter)
-      register_search_advanced_filter(/^min_vote_count:(\d+)$/) do |posts, match|
-        posts.where("(SELECT votes_count FROM discourse_voting_topic_vote_count WHERE discourse_voting_topic_vote_count.topic_id = posts.topic_id) >= ?", match.to_i)
-      end
+    register_search_advanced_filter(/^min_vote_count:(\d+)$/) do |posts, match|
+      posts.where("(SELECT votes_count FROM discourse_voting_topic_vote_count WHERE discourse_voting_topic_vote_count.topic_id = posts.topic_id) >= ?", match.to_i)
     end
 
-    # TODO: Remove if check once Discourse 2.6 is stable
-    if respond_to?(:register_search_advanced_order)
-      register_search_advanced_order(:votes) do |posts|
-        posts.reorder("COALESCE((SELECT dvtvc.votes_count FROM discourse_voting_topic_vote_count dvtvc WHERE dvtvc.topic_id = topics.id), 0) DESC")
-      end
+    register_search_advanced_order(:votes) do |posts|
+      posts.reorder("COALESCE((SELECT dvtvc.votes_count FROM discourse_voting_topic_vote_count dvtvc WHERE dvtvc.topic_id = topics.id), 0) DESC")
     end
 
     class ::Category
@@ -232,9 +226,6 @@ after_initialize do
             topic.update_vote_count
 
             return if args[:trashed]
-
-            # TODO: Remove once Discourse 2.6 is stable
-            return unless Plugin::Instance.new.respond_to?(:register_search_advanced_filter)
 
             votes.find_each do |vote|
               Notification.create!(user_id: vote.user_id,
